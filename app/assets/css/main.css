@@ -1,0 +1,94 @@
+/* Divine Scents Mini App.
+   Цвета берутся из темы Telegram (--tg-theme-*), фирменный акцент — золото.
+   Вне Telegram (проверка в браузере) действует собственная тёмная или светлая палитра. */
+:root {
+  --bg: var(--tg-theme-bg-color, #0e0f1c);
+  --bg2: var(--tg-theme-secondary-bg-color, #161727);
+  --section: var(--tg-theme-section-bg-color, #1a1c2e);
+  --text: var(--tg-theme-text-color, #eee8dc);
+  --hint: var(--tg-theme-hint-color, #a6a2b3);
+  --sep: var(--tg-theme-section-separator-color, rgba(140, 136, 160, 0.25));
+  --danger: var(--tg-theme-destructive-text-color, #e5675b);
+  --gold: #cdb27f;
+  --gold-strong: #8c6a30;
+  --halo: rgba(205, 178, 127, 0.2);
+  --glass: rgba(255, 255, 255, 0.07);
+  --glass-stroke: rgba(170, 165, 190, 0.6);
+  --shadow: rgba(0, 0, 0, 0.3);
+  --font-display: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  --font-body: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color-scheme: dark;
+}
+:root[data-scheme="light"] {
+  --gold: #8c6a30;
+  --halo: rgba(184, 150, 90, 0.18);
+  --glass: rgba(255, 255, 255, 0.95);
+  --glass-stroke: rgba(120, 112, 140, 0.55);
+  --shadow: rgba(21, 22, 42, 0.12);
+  color-scheme: light;
+}
+:root[data-tg="0"][data-scheme="light"] {
+  --bg: #f5f4f7;
+  --bg2: #eeecf2;
+  --section: #ffffff;
+  --text: #15162a;
+  --hint: #5d596c;
+  --sep: #e0dde6;
+  --danger: #b3261e;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font: 400 15px/1.45 var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+}
+button, input, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+a { color: inherit; text-decoration: none; }
+:focus-visible { outline: 1px solid var(--gold); outline-offset: 2px; }
+
+.page {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 12px max(16px, env(safe-area-inset-right)) calc(32px + env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+}
+.display { font-family: var(--font-display); font-weight: 500; line-height: 1.1; }
+.eyebrow { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--hint); }
+.price { color: var(--gold); font-variant-numeric: tabular-nums; }
+.muted { color: var(--hint); }
+
+.chip {
+  flex: none;
+  height: 34px;
+  padding: 0 14px;
+  border: 1px solid var(--sep);
+  border-radius: 17px;
+  background: transparent;
+  font-size: 14px;
+  color: var(--hint);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.chip.on { border-color: var(--gold); color: var(--gold); }
+
+.state { padding: 40px 8px; text-align: center; color: var(--hint); display: grid; gap: 14px; justify-items: center; }
+.btn-line {
+  min-height: 44px;
+  padding: 0 20px;
+  border: 1px solid var(--gold);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--gold);
+  font-weight: 500;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
