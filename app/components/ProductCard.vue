@@ -3,6 +3,8 @@ import { computed } from 'vue'
 import { GENDER_LABEL, mlText, rub, type Product } from '~/utils/catalog'
 
 const props = defineProps<{ p: Product; tester?: boolean }>()
+const { photoOf } = usePhotos()
+const hasPhoto = computed(() => !!photoOf(props.p.brand, props.p.name))
 const price = computed(() => (props.tester && props.p.minT ? props.p.minT : props.p.min))
 const meta = computed(() =>
   [props.p.concs.filter(Boolean).join(' · '), GENDER_LABEL[props.p.g]].filter(Boolean).join(' · '),
@@ -11,9 +13,9 @@ const meta = computed(() =>
 
 <template>
   <NuxtLink :to="`/p/${p.i}`" class="card">
-    <span class="img">
+    <span class="img" :class="{ 'has-photo': hasPhoto }">
       <span v-if="p.minT" class="badge">тестер</span>
-      <BottleArt :seed="p.brand + p.name" />
+      <ProductArt :brand="p.brand" :name="p.name" />
     </span>
     <span class="brand eyebrow">{{ p.brand }}</span>
     <span class="name display">{{ p.name }}</span>
@@ -35,6 +37,7 @@ const meta = computed(() =>
   border-radius: 14px;
   background: radial-gradient(circle at 50% 58%, var(--halo), transparent 68%), var(--section);
 }
+.img.has-photo { background: #fff; padding: 10px; }
 .badge {
   position: absolute;
   top: 8px;

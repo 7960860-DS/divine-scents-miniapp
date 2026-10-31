@@ -8,6 +8,7 @@ const { catalog } = useCatalog()
 const f = useFilters()
 const cart = useCart()
 const tg = useTelegram()
+const { photoOf } = usePhotos()
 
 const p = computed<Product | null>(() => catalog.value?.products[Number(route.params.id)] ?? null)
 const conc = ref('')
@@ -61,7 +62,7 @@ const { showFallback } = useMainButton(mainText, add)
       <NuxtLink to="/" class="btn-line">В каталог</NuxtLink>
     </div>
     <template v-else>
-      <div class="hero"><BottleArt :seed="p.brand + p.name" /></div>
+      <div class="hero" :class="{ 'has-photo': !!photoOf(p.brand, p.name) }"><ProductArt :brand="p.brand" :name="p.name" /></div>
       <p class="eyebrow">{{ p.brand }}</p>
       <h1 class="display name">{{ p.name }}</h1>
       <p class="meta muted">
@@ -113,6 +114,7 @@ const { showFallback } = useMainButton(mainText, add)
   height: 240px; display: flex; align-items: center; justify-content: center; padding: 24px; margin-bottom: 18px;
   border-radius: 18px; background: radial-gradient(circle at 50% 58%, var(--halo), transparent 68%), var(--section);
 }
+.hero.has-photo { background: #fff; padding: 12px; }
 .name { font-size: 34px; margin: 6px 0 6px; overflow-wrap: anywhere; }
 .meta { font-size: 14px; margin: 0 0 16px; }
 .concs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }

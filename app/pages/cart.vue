@@ -7,6 +7,7 @@ const { catalog } = useCatalog()
 const cart = useCart()
 const { lines, total, count, form } = cart
 const tg = useTelegram()
+const { photoOf } = usePhotos()
 const config = useRuntimeConfig()
 const errors = ref<Partial<Record<keyof OrderForm, string>>>({})
 const sending = ref(false)
@@ -86,7 +87,7 @@ const { showFallback } = useMainButton(mainText, submit)
     <template v-else>
       <ul class="lines">
         <li v-for="l in lines" :key="l.p.i + l.x.key" class="line">
-          <NuxtLink :to="`/p/${l.p.i}`" class="pic"><BottleArt :seed="l.p.brand + l.p.name" /></NuxtLink>
+          <NuxtLink :to="`/p/${l.p.i}`" class="pic" :class="{ 'has-photo': !!photoOf(l.p.brand, l.p.name) }"><ProductArt :brand="l.p.brand" :name="l.p.name" /></NuxtLink>
           <div class="info">
             <p class="eyebrow">{{ l.p.brand }}</p>
             <p class="display nm">{{ l.p.name }}</p>
@@ -155,6 +156,7 @@ const { showFallback } = useMainButton(mainText, submit)
 .lines { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--sep); }
 .line { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--sep); }
 .pic { height: 84px; display: flex; align-items: center; justify-content: center; padding: 8px; border-radius: 12px; background: var(--section); }
+.pic.has-photo { background: #fff; padding: 4px; }
 .info p { margin: 0; }
 .nm { font-size: 19px; overflow-wrap: anywhere; }
 .v { font-size: 13px; margin-top: 2px !important; }
