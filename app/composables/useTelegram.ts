@@ -32,7 +32,13 @@ export function initTelegram() {
   const inTelegram = !!wa && (
     (typeof wa.initData === 'string' && wa.initData.length > 0)
     || (typeof wa.platform === 'string' && wa.platform !== '' && wa.platform !== 'unknown'))
-  const mode = new URLSearchParams(window.location.search).get('mode')
+  // режим берём из адреса (?mode=kb / ?mode=menu); после перехода по страницам и «Обновить страницу»
+  // адрес уже без него — тогда берём запомненный в этой сессии
+  let mode = new URLSearchParams(window.location.search).get('mode')
+  try {
+    if (mode) sessionStorage.setItem('ds-launch-mode', mode)
+    else mode = sessionStorage.getItem('ds-launch-mode')
+  } catch { /* хранилище недоступно */ }
   launchMode = inTelegram ? (mode === 'kb' ? 'kb' : 'menu') : 'browser'
 
   if (inTelegram) {
