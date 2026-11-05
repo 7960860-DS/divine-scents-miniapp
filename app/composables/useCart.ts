@@ -21,6 +21,7 @@ function write(key: string, value: unknown) {
 const items = ref<CartItem[]>([])
 const form = ref<OrderForm>({ name: '', phone: '', city: '', point: '', comment: '' })
 const lastOrderText = ref('')
+const lastOrderLink = ref('')
 let started = false
 
 function start() {
@@ -43,7 +44,7 @@ export function useCart() {
   const total = computed(() => lines.value.reduce((s, l) => s + l.sum, 0))
 
   return {
-    items, form, lines, count, total, lastOrderText,
+    items, form, lines, count, total, lastOrderText, lastOrderLink,
     add(p: Product, x: Variant, qty: number) {
       items.value = addToCart(items.value, cartItemFrom(p, x, qty))
     },

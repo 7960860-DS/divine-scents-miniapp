@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref } from 'vue'
 import { FORMAT, mlText, rub } from '~/utils/catalog'
-import { orderPayload, orderText, payloadFits, validateForm, type OrderForm } from '~/utils/order'
+import { botOrderLink, LINK_MAX_ITEMS, orderPayload, orderText, payloadFits, validateForm, type OrderForm } from '~/utils/order'
 
 const { catalog } = useCatalog()
 const cart = useCart()
@@ -38,8 +38,23 @@ function withText(url: string, text: string) {
   return url + (url.includes('?') ? '&' : '?') + 'text=' + encodeURIComponent(text)
 }
 
+// Открыт из кнопки меню «Каталог» или в браузере: Telegram не даёт отправить заказ боту напрямую,
+// поэтому корзина уходит ссылкой на бота (до 11 позиций), а телефон и город бот спросит сам.
+const orderLink = computed(() => (tg.canSendData ? null : botOrderLink(String(config.public.bot), lines.value)))
+const tooMany = computed(() => !tg.canSendData && lines.value.length > LINK_MAX_ITEMS)
+
 async function submit() {
   if (sending.value || !lines.value.length) return
+  if (orderLink.value) {
+    const link = orderLink.value
+    cart.lastOrderLink.value = link
+    cart.lastOrderText.value = ''
+    cart.clear()
+    tg.haptic('success')
+    tg.openLink(link)
+    navigateTo('/done')
+    return
+  }
   errors.value = validateForm(form.value, true)
   const first = (Object.keys(errors.value) as (keyof OrderForm)[]).find((k) => errors.value[k])
   if (first) {
@@ -64,6 +79,7 @@ async function submit() {
   // иначе — открываем чат менеджера с готовым текстом заказа
   const text = orderText(lines.value, form.value)
   cart.lastOrderText.value = text
+  cart.lastOrderLink.value = ''
   cart.clear()
   tg.haptic('success')
   tg.openLink(withText(config.public.managerTg, text))
@@ -112,6 +128,20 @@ const { showFallback } = useMainButton(mainText, submit)
         <b class="display price">{{ rub(total) }}</b>
       </div>
 
+      <template v-if="orderLink">
+        <h2 class="display sub">Как оформить</h2>
+        <ol class="steps">
+          <li>Нажмите «Отправить заказ» — откроется чат с ботом Divine Scents.</li>
+          <li>Если внизу чата появится кнопка <b>«Запустить»</b> (Start) — нажмите её. Бот передаст заказ менеджеру.</li>
+          <li>Бот попросит телефон, имя получателя, город и пункт СДЭК.</li>
+        </ol>
+        <p class="pay muted">Менеджер подтвердит наличие, рассчитает доставку СДЭК и пришлёт ссылку на оплату картой или через СБП.</p>
+      </template>
+      <template v-else>
+      <p v-if="tooMany" class="pay muted">
+        В корзине больше {{ LINK_MAX_ITEMS }} позиций — такой заказ отправится в чат с менеджером.
+        Или оформите его через кнопку «Открыть каталог» внизу чата с ботом.
+      </p>
       <h2 class="display sub">Доставка СДЭК</h2>
       <form class="form" novalidate @submit.prevent="submit">
         <label class="field" :class="{ err: errors.name }">
@@ -143,6 +173,7 @@ const { showFallback } = useMainButton(mainText, submit)
         Менеджер подтвердит наличие, рассчитает доставку СДЭК и пришлёт ссылку на оплату картой или через СБП.
         <template v-if="!tg.canSendData"> После нажатия откроется чат с менеджером — останется нажать «Отправить».</template>
       </p>
+      </template>
     </template>
 
     <AppBottomButton v-if="showFallback && mainText" :text="mainText" @click="submit" />
@@ -179,4 +210,5 @@ const { showFallback } = useMainButton(mainText, submit)
 .field small { color: var(--danger); font-size: 13px; }
 .link { justify-self: start; border: 0; padding: 0; background: none; color: var(--gold); font-size: 14px; text-decoration: underline; text-underline-offset: 3px; }
 .pay { font-size: 13.5px; margin-top: 18px; }
+.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; font-size: 15px; line-height: 1.45; }
 </style>

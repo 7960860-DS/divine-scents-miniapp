@@ -25,6 +25,8 @@ export default defineNuxtConfig({
     public: {
       // Можно переопределить переменными окружения при сборке: NUXT_PUBLIC_MANAGER_TG и т.д.
       managerTg: 'https://t.me/+79154103888',
+      // бот, через которого оформляется заказ, когда Mini App открыт из кнопки меню или в браузере
+      bot: 'DS_opencl_bot',
       managerWa: '79154103888',
       shopPhone: '+7 915 410-38-88',
       channel: 'https://t.me/DivineScentsDS',

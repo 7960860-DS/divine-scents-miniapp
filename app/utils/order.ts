@@ -64,6 +64,44 @@ export function payloadFits(payload: string) {
   return new TextEncoder().encode(payload).length <= SEND_DATA_LIMIT
 }
 
+/**
+ * Заказ ссылкой на бота: t.me/<бот>?start=o<код>. Так оформляется заказ, когда Mini App открыт
+ * из кнопки меню «Каталог» или в браузере — там Telegram не даёт отправить данные боту напрямую.
+ * Telegram пропускает в ссылке до 64 символов [A-Za-z0-9_-], поэтому код компактный (base64url):
+ * байт версии (1), затем по 4 байта на позицию — номер товара в catalog.json (16 бит), номер варианта (5 бит),
+ * количество − 1 (4 бита) и проверка (7 бит). Бот раскодирует так же (bot.py, decode_cart) и пересчитает цены.
+ */
+export const LINK_MAX_ITEMS = 11
+
+function fnv1a(s: string): number {
+  let h = 0x811c9dc5
+  for (const b of new TextEncoder().encode(s)) h = Math.imul(h ^ b, 0x01000193) >>> 0
+  return h >>> 0
+}
+
+export function itemCheck(p: Product, x: Variant): number {
+  return fnv1a(`${p.brand}|${p.name}|${x.f}|${x.ml}|${x.c}|${x.cond}`) & 0x7f
+}
+
+/** Код корзины для ссылки на бота или null, если корзина пустая или не помещается в ссылку. */
+export function cartCode(lines: CartLine[]): string | null {
+  if (!lines.length || lines.length > LINK_MAX_ITEMS) return null
+  const bytes = [1]
+  for (const l of lines) {
+    const vi = l.p.v.indexOf(l.x)
+    const q = Math.max(1, Math.min(MAX_QTY, l.item.qty)) - 1
+    if (l.p.i > 0xffff || vi < 0 || vi > 31) return null
+    bytes.push(l.p.i >> 8, l.p.i & 0xff, (vi << 3) | (q >> 1), ((q & 1) << 7) | itemCheck(l.p, l.x))
+  }
+  const b64 = btoa(String.fromCharCode(...bytes))
+  return b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+}
+
+export function botOrderLink(bot: string, lines: CartLine[]): string | null {
+  const code = cartCode(lines)
+  return code ? `https://t.me/${bot}?start=o${code}` : null
+}
+
 /** Текст заказа для чата с менеджером (когда Mini App открыт не с кнопки клавиатуры). */
 export function orderText(lines: CartLine[], form: OrderForm): string {
   const L: string[] = []
