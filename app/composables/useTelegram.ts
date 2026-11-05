@@ -27,7 +27,11 @@ function safe(fn: () => void) {
 export function initTelegram() {
   if (typeof window === 'undefined') return
   wa = (window as unknown as { Telegram?: { WebApp?: unknown } }).Telegram?.WebApp ?? null
-  const inTelegram = !!wa && typeof wa.initData === 'string' && wa.initData.length > 0
+  // initData пустой, если Mini App открыт кнопкой клавиатуры («Открыть каталог») — так устроен Telegram.
+  // Поэтому Telegram узнаём ещё и по платформе: вне Telegram скрипт ставит platform = 'unknown'.
+  const inTelegram = !!wa && (
+    (typeof wa.initData === 'string' && wa.initData.length > 0)
+    || (typeof wa.platform === 'string' && wa.platform !== '' && wa.platform !== 'unknown'))
   const mode = new URLSearchParams(window.location.search).get('mode')
   launchMode = inTelegram ? (mode === 'kb' ? 'kb' : 'menu') : 'browser'
 
